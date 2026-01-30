@@ -3,17 +3,32 @@
 # =========================
 import streamlit as st
 import pandas as pd
-import pickle
+from sklearn.ensemble import RandomForestClassifier
 
-# =========================
-# LOAD MODEL (CACHED)
-# =========================
 @st.cache_resource
-def load_model():
-    with open("model.pkl", "rb") as f:
-        return pickle.load(f)
+def train_model():
+    df = pd.read_csv("data/procrastination_behavior_dataset.csv")
 
-model = load_model()
+    df = pd.get_dummies(
+        df,
+        columns=["task_type", "day_of_week"],
+        drop_first=True
+    )
+
+    X = df.drop("procrastinated", axis=1)
+    y = df["procrastinated"]
+
+    model = RandomForestClassifier(
+        n_estimators=200,
+        max_depth=6,
+        random_state=42
+    )
+
+    model.fit(X, y)
+    return model, X.columns
+
+model, model_features = train_model()
+
 
 # =========================
 # APP TITLE
@@ -103,7 +118,8 @@ input_data = pd.DataFrame({
 })
 
 # Add one-hot encoded task type & day
-for col in model.feature_names_in_:
+for col in model_features:
+
     if col not in input_data.columns:
         input_data[col] = 0
 
@@ -118,7 +134,8 @@ if day_col in input_data.columns:
     input_data[day_col] = 1
 
 # Ensure correct column order
-input_data = input_data[model.feature_names_in_]
+input_data = input_data[model_features]
+
 
 # =========================
 # PREDICTION
