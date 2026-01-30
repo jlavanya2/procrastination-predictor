@@ -7,7 +7,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 @st.cache_resource
 def train_model():
-    df = pd.read_csv("data/procrastination_behavior_dataset.csv")
+    df = pd.read_csv("procrastination_behavior_dataset.csv")
+
 
     df = pd.get_dummies(
         df,
